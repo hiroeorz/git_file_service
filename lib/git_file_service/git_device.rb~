@@ -1,0 +1,14 @@
+require "fileutils"
+
+module GitFileService
+  class GitDevice
+    attr_reader :working_dir
+
+    def create_repositoty(path)
+      FileUtils.makedirs(path)
+      Grit::Repo.init(path)
+    end
+
+
+  end
+end
