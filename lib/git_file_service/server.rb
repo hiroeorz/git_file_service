@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 require "timeout"
+require "drb/drb"
 require "git_file_service/git_device"
 
 module GitFileService
@@ -16,7 +17,7 @@ module GitFileService
     #
     # return value:: GitDevice instance
     def start_drb_server(uri)
-      Drb.start_service(uri, self)
+      DRb.start_service(uri, self)
       sleep
     end
 
@@ -74,6 +75,8 @@ module GitFileService
       ensure
         set_device(key, device)
       end
+
+      raise NoMethodError.new("undefined method `#{method_name}' for ""#{self.class}")
     end
     
   end
