@@ -11,7 +11,7 @@ module GitFileService
     end
 
     def initialize(path)
-      if !File.exist?(File.expand_path(".git", path)) 
+      if !File.exist?(File.expand_path(".git", path))
         self.class.create_repo(path)
       end
 
@@ -22,7 +22,7 @@ module GitFileService
     def create(filename, data, message = nil)
       message = "create new file at #{Time.now.to_s}" if message.nil?
 
-      Dir.chdir(@base_dir) do
+      in_repository(@base_dir, :check_path => filename) do
         File.open(filename, "wb") do |f|
           f.write(data)
         end
@@ -35,7 +35,7 @@ module GitFileService
     end
 
     def remove(filename, message = "remove file at #{Time.now.to_s}")
-      Dir.chdir(@base_dir) do
+      in_repository(@base_dir, :check_path => filename) do
         @repo.remove(filename)
         @repo.commit_index(message)
         !File.exist?(filename)
@@ -46,7 +46,7 @@ module GitFileService
                message = "rename file at #{Time.now.to_s}")
       return false if filename1 == filename2
 
-      Dir.chdir(@base_dir) do
+      in_repository(@base_dir, :check_path => [filename1, filename2]) do
         File.rename(filename1, filename2)
         blob = Grit::Blob.create(@repo, {:name => filename2, 
                                    :data => File.read(filename2)})
@@ -62,7 +62,7 @@ module GitFileService
     def update(filename, data, message = nil)
       message = "update file at #{Time.now.to_s}" if message.nil?
 
-      Dir.chdir(@base_dir) do
+      in_repository(@base_dir, :check_path => filename) do
         if !File.exist?(filename) or
             !@repo.tree.contents.collect{ |c| c.name }.include?(filename)
           raise ArgumentError.new("no such file on repository #{filename}")
@@ -80,11 +80,13 @@ module GitFileService
     end
 
     def exist?(filename)
-      @repo.tree.contents.collect{ |c| c.name }.include?(filename)
+      in_repository(@base_dir, :check_path => filename) do
+        @repo.tree.contents.collect{ |c| c.name }.include?(filename)
+      end
     end
 
     def save(filename, data, message = nil)
-      Dir.chdir(@base_dir) do
+      in_repository(@base_dir, :check_path => filename) do
         unless exist?(filename)
           return create(filename, data, message)
         end
@@ -94,7 +96,7 @@ module GitFileService
     end
 
     def list(dir = "/")
-      Dir.chdir(@base_dir) do
+      in_repository(@base_dir, :check_path => dir) do
         @repo.tree.contents.collect{ |c|
           {
             "size" => c.size,
@@ -108,7 +110,7 @@ module GitFileService
 
     def history(filename, opts = {:max_count => 5, :skip => 0}, 
                 branch = "master")
-      Dir.chdir(@base_dir) do
+      in_repository(@base_dir, :check_path => filename) do
         @repo.log(branch, filename, opts).collect { |commit|
           chash = commit.to_hash
           chash["created_at"] = commit.authored_date
@@ -119,7 +121,7 @@ module GitFileService
     end
 
     def read(filename, commit_id = nil)
-      Dir.chdir(@base_dir) do
+      in_repository(@base_dir, :check_path => filename) do
         if commit_id
           commit = @repo.commit(commit_id)
           blob = commit.tree / filename
@@ -132,7 +134,7 @@ module GitFileService
     end
 
     def info(filename, branch = "master")
-      Dir.chdir(@base_dir) do
+      in_repository(@base_dir, :check_path => filename) do
         info = {}
 
         @repo.tree.contents.each do |c|
@@ -155,5 +157,34 @@ module GitFileService
       end      
     end
 
+    private
+
+    def in_repository(dir, opts = {})
+      if opts.has_key?(:check_path)
+        check_secure_path(opts[:check_path])
+      end
+
+      Dir.chdir(@base_dir) do
+        yield
+      end
+    end
+
+    def check_secure_path(paths)
+      if paths.kind_of?(Array)
+        array = paths
+      else
+        array = [paths]
+      end
+
+      array.each do |path|
+        if path =~ /\.\./
+          raise SecurityError.new("Invalid Pathname:#{path}")
+        end
+      end
+    end
   end
+
+  class SecurityError < StandardError
+  end
+
 end

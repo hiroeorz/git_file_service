@@ -1,0 +1,25 @@
+#!/usr/bin/env ruby
+
+require "getoptlong"
+
+require "git_file_service"
+
+optparser = GetoptLong.new
+optparser.set_options(['--base_dir', GetoptLong::REQUIRED_ARGUMENT],
+                      ['--uri', GetoptLong::REQUIRED_ARGUMENT])
+
+base_dir = "/usr/local/var/gitfs"
+uri = "druby://localhost:5959"
+
+optparser.each_option do |name, arg|
+  case name
+  when "--base_dir"
+    base_dir = arg
+  when "--uri"
+    uri = arg
+  end
+end
+
+Dir.chdir(base_dir)
+server = GitFileService::Server.new(base_dir)
+server.start_drb_server(uri)

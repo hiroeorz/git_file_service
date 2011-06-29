@@ -128,4 +128,39 @@ describe "GitFileService::GitDevice" do
     info["message"].should =~ /create new file at/
   end
 
+  it "should raise GitFileService::SecurityError when path included .." do
+    lambda { @fs.save("../hello.txt", "aaa") }.
+      should raise_error(GitFileService::SecurityError)
+
+    lambda { @fs.list("../other_dir") }.
+      should raise_error(GitFileService::SecurityError)
+
+    lambda { @fs.create("../hello.txt", "aaa") }.
+      should raise_error(GitFileService::SecurityError)
+
+    lambda { @fs.update("../hello.txt", "aaa") }.
+      should raise_error(GitFileService::SecurityError)
+
+    lambda { @fs.read("../hello.txt") }.
+      should raise_error(GitFileService::SecurityError)
+
+    lambda { @fs.remove("../hello.txt") }.
+      should raise_error(GitFileService::SecurityError)
+
+    lambda { @fs.rename("../yoso/hello.txt", "/hello.txt") }.
+      should raise_error(GitFileService::SecurityError)
+
+    lambda { @fs.rename("/hello.txt", "../yoso/hello.txt") }.
+      should raise_error(GitFileService::SecurityError)
+
+    lambda { @fs.exist?("../hello.txt") }.
+      should raise_error(GitFileService::SecurityError)
+
+    lambda { @fs.history("../hello.txt") }.
+      should raise_error(GitFileService::SecurityError)
+
+    lambda { @fs.info("../hello.txt") }.
+      should raise_error(GitFileService::SecurityError)
+  end
+
 end

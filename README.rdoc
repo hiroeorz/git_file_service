@@ -1,6 +1,22 @@
-= git_file_service
+= GitFileService
 
-Description goes here.
+GitFileService is remote file service using git.
+
+==INSTALL
+
+ $ git clone git@github.com:hiroeorz/git_file_service.git
+ $ cd git_file_service
+ $ rake
+ $ sudo rake install 
+
+ if "rake install" raises Error from jeweler.
+ $ rake build
+ $ sudo ruby -S gem install ./pkg/git_file_service-0.1.0.gem
+
+== Example
+=== Starting DRbServer
+$ sudo /usr/local/bin/git_file_service
+
 
 == Contributing to git_file_service
  

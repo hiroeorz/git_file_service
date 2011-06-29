@@ -17,8 +17,8 @@ Jeweler::Tasks.new do |gem|
   gem.name = "git_file_service"
   gem.homepage = "http://github.com/hiroeorz/git_file_service"
   gem.license = "MIT"
-  gem.summary = %Q{TODO: one-line summary of your gem}
-  gem.description = %Q{TODO: longer description of your gem}
+  gem.summary = %Q{beta version}
+  gem.description = %Q{GitFileService is file service using git.}
   gem.email = "hiroe.orz@gmail.com"
   gem.authors = ["HIROE Shin"]
   # dependencies defined in Gemfile
