@@ -94,10 +94,10 @@ module GitFileService
       Dir.chdir(@base_dir) do
         @repo.tree.contents.collect{ |c|
           {
-            :size => c.size,
-            :mime_type => c.mime_type,
-            :name => c.name,
-            :id => c.id
+            "size" => c.size,
+            "mime_type" => c.mime_type,
+            "name" => c.name,
+            "id" => c.id
           }
         }
       end      
@@ -126,6 +126,30 @@ module GitFileService
 
         blob.data
       end
+    end
+
+    def info(filename, branch = "master")
+      Dir.chdir(@base_dir) do
+        info = {}
+
+        @repo.tree.contents.each do |c|
+          nexit if c.name != filename
+          info.merge!({
+                        "size" => c.size,
+                        "mime_type" => c.mime_type,
+                        "name" => c.name,
+                        "id" => c.id
+                      })
+        end
+        
+        history = history(filename, {:max_count => 1, :skip => 0}, branch).first
+
+        ["message", "created_at", "updated_at"].each do |key|
+          info[key] = history[key]
+        end
+
+        info
+      end      
     end
 
   end

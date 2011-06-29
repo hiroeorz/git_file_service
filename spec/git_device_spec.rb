@@ -29,6 +29,7 @@ describe "GitDevice" do
   it "should remove file" do
     @fs.remove("hello.txt").should be_true
     @fs.exist?("hello.txt").should be_false
+    File.exist?(File.expand_path("hello.txt", @path)).should be_false
   end
 
   it "shoud update file" do
@@ -43,10 +44,12 @@ describe "GitDevice" do
     data2 = data1 + "line2\n"
 
     @fs.save("hello.txt", data1, "initial create hello.txt").should be_true
+    @fs.exist?("hello.txt")
     File.exist?(path).should be_true
     File.open(path) { |f| f.read.should == data1}
 
     @fs.save("hello.txt", data2, "updated hello.txt").should be_true
+    @fs.exist?("hello.txt")
     File.exist?(path).should be_true
     File.open(path) { |f| f.read.should == data2}
   end
@@ -58,10 +61,10 @@ describe "GitDevice" do
     @fs.list.size.should == 10
 
     @fs.list.each do |gfile|
-      filename = gfile[:name]
+      filename = gfile["name"]
       data = datas[filename]
-      gfile[:size].should == data.size
-      gfile[:mime_type].should == "text/plain"
+      gfile["size"].should == data.size
+      gfile["mime_type"].should == "text/plain"
     end
     
   end
@@ -108,6 +111,20 @@ describe "GitDevice" do
     @fs.exist?(filename1).should be_false
     @fs.exist?(filename2).should be_true
     @fs.read(filename2).should == data1
+  end
+
+  it "should get information of file" do
+    filename1 = "hello.txt"
+    data1 = "line1\n"
+
+    @fs.save(filename1, data1)
+    info = @fs.info(filename1)
+    info["name"].should == filename1
+    info["size"].should == data1.size
+    info["created_at"].class.should == Time
+    info["updated_at"].class.should == Time
+    info["mime_type"].should == "text/plain"
+    info["message"].should =~ /create new file at/
   end
 
 end
