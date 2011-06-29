@@ -1,10 +1,11 @@
+# -*- coding: utf-8 -*-
 require File.expand_path(File.dirname(__FILE__) + '/spec_helper')
 
-describe "GitDevice" do
+describe "GitFileService::GitDevice" do
 
   before(:each) do
     @path = File.expand_path("~/tmp/test_git_repo")
-    @fs = GitFileService::GitDevice.create_repositoty(@path)
+    @fs = GitFileService::GitDevice.new(@path)
   end
 
   after(:each) do

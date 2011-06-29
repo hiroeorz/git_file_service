@@ -5,19 +5,22 @@ module GitFileService
   class GitDevice
     attr_reader :base_dir, :repo
 
-    def self.create_repositoty(path)
+    def self.create_repo(path)
       FileUtils.makedirs(path)
       Grit::Repo.init(path)
-      self.new(path)
     end
 
     def initialize(path)
+      if !File.exist?(File.expand_path(".git", path)) 
+        self.class.create_repo(path)
+      end
+
       @repo = Grit::Repo.new(path)
       @base_dir = path
     end
 
     def create(filename, data, message = nil)
-      message = "create new file at #{Time.now.to_s}"
+      message = "create new file at #{Time.now.to_s}" if message.nil?
 
       Dir.chdir(@base_dir) do
         File.open(filename, "wb") do |f|
