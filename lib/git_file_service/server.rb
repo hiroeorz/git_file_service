@@ -6,11 +6,17 @@ require "git_file_service/git_device"
 module GitFileService
   class Server
 
-    def initialize(base_dir)
+    # 説明:: GitFileService::ServerクラスのDRbサーバを起動します。
+    # Params::
+    #   base_dir: サービス全体のベースとなるディレクトリ。
+    #   device_max_time: 各レポジトリへのアクセスタイムアウト時間。
+    #
+    # return value:: GitDevice instance
+    def initialize(base_dir, device_max_time = 120)
       raise ArgumentError.new if !base_dir.kind_of?(String) or base_dir.empty?
       @base_dir = base_dir
       @devices = {}
-      @device_max_time = 120
+      @device_max_time = device_max_time
     end
 
     # 説明:: GitFileService::ServerクラスのDRbサーバを起動します。
@@ -23,6 +29,7 @@ module GitFileService
 
     # 説明:: GitDeviceのインスタンスを返します。
     # 捕捉:: 異なるスレッドが同じデバイスを並行的に使用しないようにQueueを使っています。
+    #
     # return value:: GitDevice instance
     def get_device(key)
       queue = @devices[key]
