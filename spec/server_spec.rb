@@ -9,6 +9,8 @@ describe "GitFileService::Server" do
     @key = "08109901000_1"
     @path = File.expand_path(@key, @base_dir)
     @server = GitFileService::Server.new(@base_dir)
+    @user_name = "猪狩完治"
+    @email = "igari@local.co.jp"
   end
 
   after(:each) do
@@ -29,12 +31,19 @@ describe "GitFileService::Server" do
   end
 
   it "should call device method" do
-    @server.save(@key, "hello.txt", "this is new file\n").should be_true
+    @server.save(@key, "hello.txt", "this is new file\n",
+                 @user_name, @email).should be_true
+
     @server.exist?(@key, "hello.txt").should be_true
     @server.history(@key, "hello.txt").class.should == Array
     @server.read(@key, "hello.txt").should == "this is new file\n"
-    @server.rename(@key, "hello.txt", "new_hello.txt").should be_true
-    @server.remove(@key, "new_hello.txt").should be_true
+
+    @server.rename(@key, "hello.txt", "new_hello.txt",
+                   @user_name, @email).should be_true
+
+    @server.remove(@key, "new_hello.txt",
+                   @user_name, @email).should be_true
+
     File.exist?(File.expand_path("hello.txt", @path)).should be_false
   end
 
