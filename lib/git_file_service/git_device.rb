@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 require "grit"
 require "fileutils"
 
@@ -20,17 +22,24 @@ module GitFileService
     end
 
     def create(filename, data, user_name, email, message = nil)
-      message = "create new file at #{Time.now.to_s}" if message.nil?
+      encoded_filename = filename + ""
+      encoded_filename.force_encoding("utf-8")
 
-      in_repository(@base_dir, user_name, email, :check_path => filename) do
-        File.open(filename, "wb") do |f|
+      if message.nil? or message.empty?
+        message = "create new file at #{Time.now.to_s}"
+      end
+ 
+      in_repository(@base_dir, user_name, email, 
+                    :check_path => encoded_filename) do
+        File.open(encoded_filename, "wb") do |f|
           f.write(data)
         end
         
-        new_blob = Grit::Blob.create(@repo, {:name => filename, :data => data})
+        new_blob = Grit::Blob.create(@repo, 
+                                     {:name => encoded_filename, :data => data})
         @repo.add(new_blob.name)
         @repo.commit_index(message)
-        File.exist?(filename)
+        File.exist?(encoded_filename)
       end
     end
 
@@ -47,7 +56,8 @@ module GitFileService
                message = "rename file at #{Time.now.to_s}")
       return false if filename1 == filename2
 
-      in_repository(@base_dir, user_name, email, :check_path => [filename1, filename2]) do
+      in_repository(@base_dir, user_name, email, 
+                    :check_path => [filename1, filename2]) do
         File.rename(filename1, filename2)
         blob = Grit::Blob.create(@repo, {:name => filename2, 
                                    :data => File.read(filename2)})
@@ -102,7 +112,7 @@ module GitFileService
           {
             "size" => c.size,
             "mime_type" => c.mime_type,
-            "name" => c.name,
+            "name" => c.name.force_encoding("utf-8"),
             "id" => c.id
           }
         }
@@ -111,6 +121,7 @@ module GitFileService
 
     def history(filename, opts = {:max_count => 5, :skip => 0}, 
                 branch = "master")
+
       in_repository(@base_dir, nil, nil, :check_path => filename) do
         @repo.log(branch, filename, opts).collect { |commit|
           chash = commit.to_hash
@@ -127,12 +138,14 @@ module GitFileService
     end
 
     def read(filename, commit_id = nil)
+      filename.force_encoding("utf-8")
+
       in_repository(@base_dir, nil, nil, :check_path => filename) do
         if commit_id
           commit = @repo.commit(commit_id)
-          blob = commit.tree / filename
+          blob = find_contents(commit.tree, filename)
         else
-          blob = @repo.tree / filename
+          blob = find_contents(@repo.tree, filename)
         end
 
         blob.data
@@ -141,20 +154,16 @@ module GitFileService
 
     def info(filename, branch = "master")
       in_repository(@base_dir, nil, nil, :check_path => filename) do
-        info = {}
+        commit = find_contents(@repo.tree, filename)
+        info = {
+          "size" => commit.size,
+          "mime_type" => commit.mime_type,
+          "name" => commit.name,
+          "id" => commit.id
+        }
 
-        @repo.tree.contents.each do |c|
-          nexit if c.name != filename
-          info.merge!({
-                        "size" => c.size,
-                        "mime_type" => c.mime_type,
-                        "name" => c.name,
-                        "id" => c.id
-                      })
-        end
-        
         history = history(filename, {:max_count => 1, :skip => 0}, branch).first
-
+        history = {} if history.nil?
         ["message", "created_at", "updated_at"].each do |key|
           info[key] = history[key]
         end
@@ -164,6 +173,13 @@ module GitFileService
     end
 
     private
+
+    def find_contents(tree, filename)
+      tree.contents.find { |c|
+        c.name.force_encoding("utf-8")
+        c.name == filename
+      }
+    end
 
     def in_repository(dir, user_name, email, opts = {})
       if opts.has_key?(:check_path)
