@@ -2,6 +2,7 @@
 
 require "grit"
 require "fileutils"
+require "kconv"
 
 module GitFileService
   class GitDevice
@@ -22,8 +23,7 @@ module GitFileService
     end
 
     def create(filename, data, user_name, email, message = nil)
-      encoded_filename = filename + ""
-      encoded_filename.force_encoding("utf-8")
+      encoded_filename = (filename + "").force_encoding("utf-8")
 
       if message.nil? or message.empty?
         message = "create new file at #{Time.now.to_s}"
@@ -35,10 +35,12 @@ module GitFileService
           f.write(data)
         end
         
-        new_blob = Grit::Blob.create(@repo, 
-                                     {:name => encoded_filename, :data => data})
-        @repo.add(new_blob.name)
-        @repo.commit_index(message)
+        @repo.status.files.each do |name, file|
+          @repo.add(file.path) if file.untracked
+        end
+
+        @repo.commit_all(message)
+
         File.exist?(encoded_filename)
       end
     end
