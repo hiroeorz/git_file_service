@@ -75,6 +75,8 @@ describe "GitFileService::GitDevice" do
       data = datas[filename]
       gfile["size"].should == data.size
       gfile["mime_type"].should == "text/plain"
+      gfile["created_at"].class.should == Time
+      gfile["updated_at"].class.should == Time
     end
     
   end

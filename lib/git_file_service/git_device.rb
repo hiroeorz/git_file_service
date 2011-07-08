@@ -110,14 +110,17 @@ module GitFileService
 
     def list(dir = "/")
       in_repository(@base_dir, nil, nil, :check_path => dir) do
-        @repo.tree.contents.collect{ |c|
+        filelist = @repo.tree.contents.collect{ |b|
+          b.name.force_encoding("utf-8")
           {
-            "size" => c.size,
-            "mime_type" => c.mime_type,
-            "name" => c.name.force_encoding("utf-8"),
-            "id" => c.id
-          }
+            "size" => b.size,
+            "mime_type" => b.mime_type,
+            "name" => b.name,
+            "id" => b.id
+          }.merge(info(b.name))
         }
+
+        filelist.sort!{|a, b| a["updated_at"] <=> b["updated_at"]}
       end      
     end
 
