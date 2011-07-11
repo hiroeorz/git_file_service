@@ -1,10 +1,13 @@
 # -*- coding: utf-8 -*-
 require File.expand_path(File.dirname(__FILE__) + '/spec_helper')
+require "fileutils"
 
 describe "GitFileService::GitDevice" do
 
   before(:each) do
-    @path = File.expand_path("~/tmp/test_git_repo")
+    @path = File.expand_path("~/tmp/test_git_repo.git")
+    FileUtils.makedirs(@path)
+
     @fs = GitFileService::GitDevice.new(@path)
     @user_name = "猪狩完治"
     @email = "igari@local.co.jp"
