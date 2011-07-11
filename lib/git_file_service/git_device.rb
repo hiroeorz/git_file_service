@@ -120,7 +120,7 @@ module GitFileService
           }.merge(info(b.name))
         }
 
-        filelist.sort!{|a, b| a["updated_at"] <=> b["updated_at"]}
+        filelist.sort!{|a, b| b["updated_at"] <=> a["updated_at"]}
       end      
     end
 
