@@ -5,6 +5,7 @@ require "git_file_service/git_device"
 
 module GitFileService
   class Server
+    :attr_accessor daemon_flg
 
     # 説明:: GitFileService::ServerクラスのDRbサーバを起動します。
     # Params::
@@ -17,12 +18,14 @@ module GitFileService
       @base_dir = base_dir
       @devices = {}
       @device_max_time = device_max_time
+      @daemon_flg = false
     end
 
     # 説明:: GitFileService::ServerクラスのDRbサーバを起動します。
     #
     # return value:: GitDevice instance
     def start_drb_server(uri)
+      daemon if @daemon_flg
       DRb.start_service(uri, self)
       sleep
     end
@@ -86,5 +89,16 @@ module GitFileService
       raise NoMethodError.new("undefined method `#{method_name}' for ""#{self.class}")
     end
     
+    private
+
+    def daemon
+      exit if fork
+      exit if fork
+      Process.setsid
+      STDIN.close
+      STDOUT.reopen("/dev/null", "w")
+      STDERR.reopen("/dev/null", "w")
+    end
+
   end
 end

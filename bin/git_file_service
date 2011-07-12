@@ -6,10 +6,12 @@ require "git_file_service"
 
 optparser = GetoptLong.new
 optparser.set_options(['--base_dir', GetoptLong::REQUIRED_ARGUMENT],
-                      ['--uri', GetoptLong::REQUIRED_ARGUMENT])
+                      ['--uri', GetoptLong::REQUIRED_ARGUMENT,
+                       '--daemon', GetoptLong::NO_ARGUMENT])
 
 base_dir = "/usr/local/var/gitfs"
 uri = "druby://localhost:5959"
+daemon_flg = false
 
 optparser.each_option do |name, arg|
   case name
@@ -17,9 +19,12 @@ optparser.each_option do |name, arg|
     base_dir = arg
   when "--uri"
     uri = arg
+  when "--daemon"
+    daemon_flg = true
   end
 end
 
 Dir.chdir(base_dir)
 server = GitFileService::Server.new(base_dir)
+server.daemon_flg = daemon_flg
 server.start_drb_server(uri)
