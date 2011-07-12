@@ -6,8 +6,8 @@ require "git_file_service"
 
 optparser = GetoptLong.new
 optparser.set_options(['--base_dir', GetoptLong::REQUIRED_ARGUMENT],
-                      ['--uri', GetoptLong::REQUIRED_ARGUMENT,
-                       '--daemon', GetoptLong::NO_ARGUMENT])
+                      ['--uri', GetoptLong::REQUIRED_ARGUMENT],
+                      ['--daemon', GetoptLong::NO_ARGUMENT])
 
 base_dir = "/usr/local/var/gitfs"
 uri = "druby://localhost:5959"
