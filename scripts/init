@@ -1,0 +1,37 @@
+#! /bin/sh
+
+GITFS=/usr/local/bin/git_file_service
+URI=druby://localhost:5959
+BASE_DIR=/var/gitfs
+USER=gitfs
+
+case "$1" in
+	start)
+		echo -n "Starting GitFileService..."
+		sudo -u $USER $GITFS --uri=$URI --base_dir=$BASE_DIR --daemon
+		echo "done."
+		echo
+	;;
+	
+	stop)
+		echo -n "Stopping GitFileService..."
+		if pgrep -f $GITFS > /dev/null; then
+			pkill -f $GITFS
+		fi
+		echo "done."
+		echo
+	;;
+
+	restart|force-reload)
+		$0 stop
+		sleep 1
+		$0 start
+	;;
+
+	*)
+		echo "Usage: $N {start|stop|restart|force-reload}" >&2
+		exit 1
+	;;
+esac
+
+exit 0
