@@ -5,7 +5,7 @@ require "git_file_service/git_device"
 
 module GitFileService
   class Server
-    :attr_accessor daemon_flg
+    attr_accessor :daemon_flg
 
     # 説明:: GitFileService::ServerクラスのDRbサーバを起動します。
     # Params::
