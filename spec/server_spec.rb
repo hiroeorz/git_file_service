@@ -41,7 +41,7 @@ describe "GitFileService::Server" do
     @server.rename(@key, "hello.txt", "new_hello.txt",
                    @user_name, @email).should be_true
 
-    @server.remove(@key, "new_hello.txt",
+    @server.delete(@key, "new_hello.txt",
                    @user_name, @email).should be_true
 
     File.exist?(File.expand_path("hello.txt", @path)).should be_false

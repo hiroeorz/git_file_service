@@ -45,7 +45,7 @@ module GitFileService
       end
     end
 
-    def remove(filename, user_name, email, 
+    def delete(filename, user_name, email, 
                message = "remove file at #{Time.now.to_s}")
       in_repository(@base_dir, user_name, email, :check_path => filename) do
         @repo.remove(filename)

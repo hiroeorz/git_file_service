@@ -33,8 +33,8 @@ describe "GitFileService::GitDevice" do
     File.exist?(File.expand_path("hello.txt", @path)).should be_true
   end
 
-  it "should remove file" do
-    @fs.remove("hello.txt", @user_name, @email).should be_true
+  it "should delete file" do
+    @fs.delete("hello.txt", @user_name, @email).should be_true
     @fs.exist?("hello.txt").should be_false
     File.exist?(File.expand_path("hello.txt", @path)).should be_false
   end
@@ -162,7 +162,7 @@ describe "GitFileService::GitDevice" do
     lambda { @fs.read("../hello.txt") }.
       should raise_error(GitFileService::SecurityError)
 
-    lambda { @fs.remove("../hello.txt", @user_name, @email) }.
+    lambda { @fs.delete("../hello.txt", @user_name, @email) }.
       should raise_error(GitFileService::SecurityError)
 
     lambda { @fs.rename("../yoso/hello.txt", "/hello.txt", 
