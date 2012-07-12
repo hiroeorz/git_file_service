@@ -5,6 +5,8 @@ require "git_file_service/git_device"
 
 module GitFileService
   class Server
+    MAX_RECIEVE_SIZE = 1024 * 1024 * 200
+
     attr_accessor :daemon_flg
 
     # 説明:: GitFileService::ServerクラスのDRbサーバを起動します。
@@ -26,6 +28,7 @@ module GitFileService
     # return value:: GitDevice instance
     def start_drb_server(uri)
       daemon if @daemon_flg
+      DRb::DRbServer.default_load_limit(MAX_RECIEVE_SIZE)
       DRb.start_service(uri, self)
       sleep
     end
